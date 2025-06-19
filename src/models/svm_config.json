@@ -1,0 +1,5 @@
+{
+    "kernel": "poly",
+    "gamma": "scale",
+    "nu": 0.1
+}
