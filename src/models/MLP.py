@@ -1,7 +1,13 @@
 import numpy as np 
 from src.models.base import BaseModel
+import torch
 import torch.nn as nn
-from src.models.utils import *
+from torch.utils.data import DataLoader, TensorDataset
+import pandas as pd 
+from sklearn.metrics import roc_auc_score
+
+
+#from src.models.utils import *
 import torch.optim as optim
 from typing import List 
 
