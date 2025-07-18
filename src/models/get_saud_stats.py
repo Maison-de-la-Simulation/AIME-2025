@@ -135,7 +135,7 @@ def get_stats(data_with_predictions, model_name,threshold ):
     res.to_csv(f"{IDENTIFICATION_SAUD_PATH}/saud_stats_{model_name}.csv", index=False)
 
 
-def get_saud_stats(logger, model_threshold_pairs): 
+def get_saud_stats(logger, model_name, threshold): 
     """
     Main evaluation function to:
     - Load data and model predictions,
@@ -146,8 +146,11 @@ def get_saud_stats(logger, model_threshold_pairs):
     ----------
     logger : logging.Logger
         Logger instance to track execution and debugging information.
-    model_threshold_pairs : dict
-        Dictionary with model names as keys and thresholds as values.
+    model_name : str
+        the model names .
+    threshold : float : 
+        threshold values for SAUD classification.
+
     """
     
     #Load the data with the predictions of all the evailable models
@@ -155,12 +158,12 @@ def get_saud_stats(logger, model_threshold_pairs):
 
     data = load_data(DATA_PATHS["processed"])  
     # Load model predictions
-    models_data_with_predictions = {model_name: load_data(F'{DATA_PATHS["data_with_predictions"]}/{model_name}') for model_name in model_threshold_pairs}
+    models_data_with_predictions =  load_data(F'{DATA_PATHS["data_with_predictions"]}/{model_name}') 
     
     logger.info(f"Plot the optimal age at HCC onset with different models ")
     #plot_age_hcc_optimal_plot(data, models_data_with_predictions["xgboost"], models_data_with_predictions["oneClassSVM"], models_data_with_predictions["MLP"], FEATURE_GROUPS["hcc_age_onset"], model_threshold_pairs["xgboost"], model_threshold_pairs["oneClassSVM"], model_threshold_pairs["MLP"])
     logger.info(f"get stats on the number of saud / saud with HCC  ")
-    get_stats(data, models_data_with_predictions, model_threshold_pairs)
+    get_stats(data, models_data_with_predictions, threshold)
 
 
 
