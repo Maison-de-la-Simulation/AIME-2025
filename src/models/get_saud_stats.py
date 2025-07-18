@@ -132,7 +132,10 @@ def get_stats(data_with_predictions, model_name,threshold ):
         })
 
     res = pd.DataFrame(res)
-    res.to_csv(f"{IDENTIFICATION_SAUD_PATH}/saud_stats_{model_name}.csv", index=False)
+    # saud stats   
+    pth = IDENTIFICATION_SAUD_PATH / model_name 
+    pth.mkdir(parents=True, exist_ok=True)
+    res.to_csv(f"{pth}/saud_stats_{model_name}.csv", index=False)
 
 
 def get_saud_stats(logger, model_name, threshold): 
@@ -156,14 +159,12 @@ def get_saud_stats(logger, model_name, threshold):
     #Load the data with the predictions of all the evailable models
     logger.info(f"Load data With predictions")
 
-    data = load_data(DATA_PATHS["processed"])  
     # Load model predictions
     models_data_with_predictions =  load_data(F'{DATA_PATHS["data_with_predictions"]}/{model_name}') 
-    
-    logger.info(f"Plot the optimal age at HCC onset with different models ")
     #plot_age_hcc_optimal_plot(data, models_data_with_predictions["xgboost"], models_data_with_predictions["oneClassSVM"], models_data_with_predictions["MLP"], FEATURE_GROUPS["hcc_age_onset"], model_threshold_pairs["xgboost"], model_threshold_pairs["oneClassSVM"], model_threshold_pairs["MLP"])
+   
     logger.info(f"get stats on the number of saud / saud with HCC  ")
-    get_stats(data, models_data_with_predictions, threshold)
+    get_stats(models_data_with_predictions, model_name, threshold)
 
 
 
@@ -172,10 +173,9 @@ if __name__ == "__main__":
     #parse the model arguments
     # setup logger 
     logger = setup_logger(IDENTIFICATION_SAUD_LOG_PATH, 'identified_saud_logs')
-    
     args = parse_model_args(require_threshold=True)
-    model_threshold_pairs = dict(zip(args.model, args.threshold)) 
-    logger.info(f"Evaluating identified saud with {model_threshold_pairs}")
-    get_saud_stats(logger, model_threshold_pairs)
+    
+    logger.info(f"Evaluating identified saud with {args.model}")
+    get_saud_stats(logger, args.model, args.threshold)
 
 

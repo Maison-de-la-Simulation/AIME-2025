@@ -14,7 +14,6 @@ from src.config import(
     DATA_PATHS,
     TRAIN_LOG_DIR_PATH, 
     get_hyperparams_grid, 
-    selected_features, 
     model_hyperparam_selection_criterion,
     
 )
@@ -91,12 +90,10 @@ def train_model(model_name, logger):
 
     # load the training data 
     data = load_data(DATA_PATHS["processed"]) 
-    print(data.head)
-    data = data[selected_features]
-    print(data.head)
-    
+    data = select_features(data)
+
     logger.info(f"Split data into X:features  and Y:target ")
-    # get the features data and the target data. . 
+    # get the features data and the target data.  
     XS,YS =  split_features_target(data)
 
     logger.info(f"Preprocess HCC variable ")

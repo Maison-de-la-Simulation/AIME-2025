@@ -33,6 +33,7 @@ def predict_model(model_name,logger):
     # load the preprocessed data : 
     logger.info(f"Loading data")
     data = load_data(DATA_PATHS["processed"]) 
+    data = select_features(data)
     
     logger.info(f"Split features and target data")
     XS,YS =  split_features_target(data)

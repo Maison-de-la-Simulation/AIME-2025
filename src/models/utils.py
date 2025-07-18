@@ -17,7 +17,8 @@ from src.features.preprocessing import pre_process_age_variables
 from src.config import( 
     FEATURE_GROUPS, 
     CLASSIF_PERFS_DIR_PATH,
-    REQUIRED_PARAMS
+    REQUIRED_PARAMS, 
+    selected_features
 )
 
 
@@ -76,6 +77,34 @@ def load_data(path):
         data[phase] = pd.read_csv(f"{path}/{phase}.csv", low_memory=False)
 
     return data 
+
+
+def select_features(data_dict): 
+    """
+
+    Selects specific features from each dataset in the data_dict.
+
+    Parameters
+    ----------
+    data_dict : dict
+        A dictionary where each key is a dataset name ( 'train', 'val', 'test')
+        and the value is a pandas DataFrame.
+        
+    Returns
+    -------
+    dict
+        A new dictionary with the same keys as data_dict, but each DataFrame contains
+        only the selected features.
+    """
+    filtered_data = {}
+
+    for set_name, df in data_dict.items():
+        filtered_data[set_name] = df[selected_features]
+
+    return filtered_data
+
+
+
 
 
 def split_features_target(data): 
