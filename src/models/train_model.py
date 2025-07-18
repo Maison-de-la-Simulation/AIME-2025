@@ -93,6 +93,7 @@ def train_model(model_name, logger):
     data = load_data(DATA_PATHS["processed"]) 
     print(data.head)
     data = data[selected_features]
+    print(data.head)
     
     logger.info(f"Split data into X:features  and Y:target ")
     # get the features data and the target data. . 
@@ -111,9 +112,10 @@ def train_model(model_name, logger):
     
 
 if __name__ == "__main__":
-    #parse the model arguments
+    #parse the model arguments    
     args = parse_model_args()
-    # setup logger 
+    # setup logger
+    print(args.model)
     logger = setup_logger(TRAIN_LOG_DIR_PATH, args.model)
     
     train_model(args.model,logger)

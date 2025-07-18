@@ -38,6 +38,7 @@ def setup_logger(log_file_path: Path, name: str):
     logging.Logger
         The configured logger instance.
     """
+    print(log_file_path)
     log_dir = log_file_path / f"{name}.log"
     log_dir.parent.mkdir(parents=True, exist_ok=True)
     
@@ -187,6 +188,49 @@ def validate_params(model_name, params):
         raise ValueError(f"Missing required hyperparameters for {model_name}: {missing}")
 
 
+def parse_models_with_multiple_args(require_threshold=False, require_hyperparam=False):
+    """
+    Parse command-line arguments to select a model for evaluation.
+
+    Parameters
+    ----------
+    require_threshold : bool
+        Whether the threshold argument is required.
+
+    Returns
+    -------
+    argparse.Namespace
+        Parsed command-line arguments containing the selected model name.
+
+    Raises
+    ------
+    ValueError
+        If the provided model name is not in the available models.
+    """
+    # Argument parser
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model', type=str, required=True, choices=list(models.keys()),
+                        help='Model to evaluate')
+    
+    parser.add_argument('--threshold', type=float, nargs='+' ,required=require_threshold,
+                        help='Threshold value for decision')
+    
+    parser.add_argument('--hyperparam_file', type=str, required=require_hyperparam,
+                        help='Model hyperparameters as JSON file')
+
+
+    args = parser.parse_args()  
+    
+    if require_threshold and len(args.model) != len(args.threshold):
+        raise ValueError("You must provide one threshold per model.")
+
+    for model in args.model:
+        if model not in models:
+            raise ValueError(f"Unknown model: {model}. Available models: {list(models.keys())}")
+    
+    return args
+
+
 def parse_model_args(require_threshold=False, require_hyperparam=False):
     """
     Parse command-line arguments to select a model for evaluation.
@@ -208,10 +252,10 @@ def parse_model_args(require_threshold=False, require_hyperparam=False):
     """
     # Argument parser
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, required=True, nargs='+', choices=list(models.keys()),
+    parser.add_argument('--model', type=str, required=True, choices=list(models.keys()),
                         help='Model to evaluate')
     
-    parser.add_argument('--threshold', type=float, nargs='+' ,required=require_threshold,
+    parser.add_argument('--threshold', type=float,required=require_threshold,
                         help='Threshold value for decision')
     
     parser.add_argument('--hyperparam_file', type=str, required=require_hyperparam,
@@ -220,13 +264,7 @@ def parse_model_args(require_threshold=False, require_hyperparam=False):
 
     args = parser.parse_args()  
     
-    if require_threshold and len(args.model) != len(args.threshold):
-        raise ValueError("You must provide one threshold per model.")
-
-    for model in args.model:
-        if model not in models:
-            raise ValueError(f"Unknown model: {model}. Available models: {list(models.keys())}")
-    
+ 
     return args
 
 
