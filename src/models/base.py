@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 import pandas as pd
 import joblib
+import os 
 
 from src.config import(
     MODELS_PATHS 
@@ -81,7 +82,7 @@ class BaseModel(ABC):
         pass
     
 
-    def save(self):
+    def save(self, model_path):
         """
         Saves the trained model to disk using joblib.
 
@@ -90,14 +91,13 @@ class BaseModel(ABC):
         str
             The file path where the model was saved.
         """
-        model_path = MODELS_PATHS[self.name]
         joblib.dump({
                      "model": self.model,
                      "params": self.model_params
                     }, model_path)
-        return model_path
         
-    def load_model(self):
+        
+    def load_model(self, model_path):
         """
         Loads a previously saved trained model from disk.
 
@@ -106,7 +106,6 @@ class BaseModel(ABC):
         BaseModel
             The model instance with the loaded model.
         """
-        model_path = MODELS_PATHS[self.name]
         loaded_obj = joblib.load(model_path)
         self.model = loaded_obj["model"]
         self.model_params = loaded_obj["params"]

@@ -9,15 +9,17 @@ from src.config import(
     
 )
 
-def search_threshold(d,path_to_save):
+
+def search_threshold(logger,model_name, d):
     
     distances = []
+    logger.info(f"get list of thresholds")
     thresholds  = get_thresholds_from_proba(d["predicted_proba"])
     print(thresholds)
-        
     # get hcc patients
     df = d[d["age_hepatocellular_carcinoma_dp_dr"].notna()]
 
+    logger.info(f"Get distances by threshold")
     for i, threshold in enumerate(thresholds):
         all_sauds = d[(d['alcohol_use_disorders'] == 0) & (d['predicted_proba'] >= threshold)]
         nb_all_sauds = len(all_sauds)
@@ -37,22 +39,28 @@ def search_threshold(d,path_to_save):
                     "%saud_/total" : round(nb_all_sauds/len(d) *100,2),
                     "nb_saud_hcc" : nb_saud_hcc, 
                     "saud_hcc/saud" : round(nb_saud_hcc/nb_all_sauds *100, 2)
-                })
-    
+                })    
     distances_df = pd.DataFrame(distances)
-    distances_df.to_csv(f"{path_to_save}/wasserstein_distance_by_threshold.csv", index=False) 
-    plot_age_hcc(d, path_to_save, thresholds)
+    
+    logger.info(f"Save distances dataframe")
+    distances_df.to_csv(f"{THRESHOLD_SEARCH_PATH[model_name]}/wasserstein_distance_by_threshold.csv", index=False) 
+    
+    logger.info(f"plot AHO by threshold")
+    plot_age_hcc(d, THRESHOLD_SEARCH_PATH[model_name], thresholds)
+    
+    # get the optimal threshold : 
+    best_threshold = distances_df.loc[distances_df["dist"].idxmin(), "seil"]   
+    return best_threshold 
+    
     
     
 def search_best_seil(model_name, logger): 
     # load the data : 
-    logger.info(f"Loading data with predictions")
-    data_with_predictions = load_data(f'{DATA_PATHS["data_with_predictions"]}/{model_name}') 
-    
+    data_with_predictions = get_data(logger, f'{DATA_PATHS["data_with_predictions"]}/{model_name}') 
+
     # search threshold      
-    pth = THRESHOLD_SEARCH_PATH / model_name 
-    pth.mkdir(parents=True, exist_ok=True)
-    search_threshold(data_with_predictions["all_data"],pth)
+    best_threshold = search_threshold(logger, model_name,  data_with_predictions["all_data"]) 
+    print(best_threshold)
 
 
 if __name__ == "__main__":

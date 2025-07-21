@@ -1,5 +1,0 @@
-phase,nb_saud,%saud ,%saud/aud,%saud/non_aud,prev_hcc
-train,2139,0.155,2.161,0.167,33.567
-validation,869,0.158,2.195,0.17,37.629
-test,1302,0.158,2.193,0.17,33.871
-all_data,4310,0.156,2.177,0.169,34.478

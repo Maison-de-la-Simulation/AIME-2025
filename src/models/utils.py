@@ -12,13 +12,14 @@ from scipy.stats import wasserstein_distance
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, roc_auc_score
 from src.models.available_models import models
 from src.features.preprocessing import pre_process_age_variables
-
+import os 
 
 from src.config import( 
     FEATURE_GROUPS, 
     CLASSIF_PERFS_DIR_PATH,
     REQUIRED_PARAMS, 
-    selected_features
+    selected_features, 
+    DATA_PATHS
 )
 
 
@@ -78,6 +79,26 @@ def load_data(path):
 
     return data 
 
+
+def get_data(logger, data_path ): 
+    
+    # load the training data 
+    logger.info(f"Load data")
+    data = load_data(data_path) 
+    return data 
+
+def prepare_training_data(logger, data): 
+    
+    
+    logger.info(f"Split data into X:features  and Y:target ")
+    # get the features data and the target data.  
+    XS,YS =  split_features_target(data)
+
+    logger.info(f"Preprocess HCC variable ")
+    # Hcc variable preprocessing : 
+    pre_process_age_variables(XS)
+    
+    return XS,YS
 
 def select_features(data_dict): 
     """
@@ -203,9 +224,7 @@ def save_classification_performances_csv(perfs, model_name):
     pathlib.Path
         Path to the saved CSV file.
     """
-    save_path = CLASSIF_PERFS_DIR_PATH / f"{model_name}.csv"
-    save_path.parent.mkdir(parents=True, exist_ok=True)
-    
+    save_path = os.path.join(CLASSIF_PERFS_DIR_PATH[model_name], f"{model_name}_conf_matrice.csv") 
     perfs.to_csv(save_path, index=False)
     return save_path 
 
@@ -246,6 +265,7 @@ def parse_models_with_multiple_args(require_threshold=False, require_hyperparam=
     
     parser.add_argument('--hyperparam_file', type=str, required=require_hyperparam,
                         help='Model hyperparameters as JSON file')
+    
 
 
     args = parser.parse_args()  

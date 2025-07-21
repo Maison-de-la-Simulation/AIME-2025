@@ -6,6 +6,7 @@ from pathlib import Path
 from tqdm import tqdm
 from src.models.utils import * 
 from sklearn.model_selection import ParameterGrid
+import os 
 
 # add the project root to the path 
 sys.path.append(str(Path(__file__).parent.parent.parent))
@@ -14,6 +15,7 @@ from src.config import(
     DATA_PATHS,
     TRAIN_LOG_DIR_PATH, 
     get_hyperparams_grid, 
+    MODELS_PATHS, 
     model_hyperparam_selection_criterion,
     
 )
@@ -71,7 +73,22 @@ def search_best_model(XS, YS, model_name, logger):
     return trained_models[idx_best_model] 
 
 
-def train_model(model_name, logger):
+    
+def save_best_trained_model(logger, best_model,model_path): 
+   
+    best_model.save(model_path) 
+    logger.info(f"Model training completed. Best Model saved at {model_path}") 
+
+
+def train(logger, model_name, XS, YS ): 
+    
+    logger.info(f"Training {model_name} model with hyperparameter search ! ")
+    best_model = search_best_model(XS, YS, model_name, logger)
+    return best_model 
+    
+    
+
+def train_model(model_name, logger, path_to_save):
     """
     Train the specified model using hyperparameter search.
 
@@ -86,36 +103,19 @@ def train_model(model_name, logger):
     logger : Logger 
     """ 
     
-    logger.info(f"Load data")
-
-    # load the training data 
-    data = load_data(DATA_PATHS["processed"]) 
+    data = get_data(logger, DATA_PATHS["processed"])
     data = select_features(data)
-
-    logger.info(f"Split data into X:features  and Y:target ")
-    # get the features data and the target data.  
-    XS,YS =  split_features_target(data)
-
-    logger.info(f"Preprocess HCC variable ")
-    # Hcc variable preprocessing : 
-    pre_process_age_variables(XS)
+    XS,YS = prepare_training_data(logger, data)
+    best_model = train(logger, model_name, XS, YS )
+    save_best_trained_model(logger, best_model, path_to_save)
     
-    logger.info(f"Training {model_name} model with hyperparameter search ! ")
-    best_model = search_best_model(XS, YS, model_name, logger)
     
-    # save the best model 
-    model_path = best_model.save()
-    logger.info(f"Model training completed. Best Model saved at {model_path}")
-    
-
 if __name__ == "__main__":
     #parse the model arguments    
     args = parse_model_args()
-    # setup logger
-    print(args.model)
     logger = setup_logger(TRAIN_LOG_DIR_PATH, args.model)
-    
-    train_model(args.model,logger)
+    path_to_save = os.path.join(MODELS_PATHS[args.model], f"best_{args.model}.pkl") 
+    train_model(args.model,logger, path_to_save)
 
 
 

@@ -12,6 +12,16 @@ from src.config import(
     DATA_PATHS
 )
 
+def calculate_classif_perfs(data_with_predictions): 
+    
+    logger.info(f"Calculate classification performances")
+    perfs = []
+    for set_name, d in data_with_predictions.items():
+        perfs.append(get_performances(d[FEATURE_GROUPS["target_variable"]], d["predicted_label"], set_name))
+        
+    dataframe_perf = pd.DataFrame(perfs)
+    return dataframe_perf
+
 
 def evaluate_model(model_name, logger): 
     """
@@ -28,14 +38,9 @@ def evaluate_model(model_name, logger):
     """
 
     # load the data : 
-    logger.info(f"Loading data with predictions")
-    data_with_predictions = load_data(f'{DATA_PATHS["data_with_predictions"]}/{model_name}') 
+    data_with_predictions = get_data(logger, f'{DATA_PATHS["data_with_predictions"]}/{model_name}') 
     
-    logger.info(f"Calculate classification performances")
-    perfs = []
-    for set_name, d in data_with_predictions.items():
-        perfs.append(get_performances(d[FEATURE_GROUPS["target_variable"]], d["predicted_label"], set_name))
-    dataframe_perf = pd.DataFrame(perfs)
+    dataframe_perf = calculate_classif_perfs(data_with_predictions)
     
     save_p = save_classification_performances_csv(dataframe_perf,model_name)
     logger.info(f"{model_name} Classification Performances saved at: {save_p}")
