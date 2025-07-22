@@ -88,8 +88,7 @@ def get_data(logger, data_path ):
     return data 
 
 def prepare_training_data(logger, data): 
-    
-    
+        
     logger.info(f"Split data into X:features  and Y:target ")
     # get the features data and the target data.  
     XS,YS =  split_features_target(data)
@@ -164,6 +163,7 @@ def load_data_for_uncertainty_estimation(path):
     YS["train_val"] = pd.concat([YS["train"], YS["validation"]], axis=0).reset_index(drop=True)
 
     return XS, YS 
+    
     
 def get_performances(YS, YS_hat, set_name ): 
     """

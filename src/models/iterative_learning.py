@@ -58,9 +58,14 @@ def update_with_saud(logger, data_with_predictions,best_threshold):
         
     return data_with_predictions 
     
-def storage(logger, data_history, data_with_predictions, iteration_number ): 
-    pass 
-
+def storage(logger, data_history, data_with_predictions, iteration_number, best_threshold): 
+    logger.info(f"Storage iteration {iteration_number} results")
+    for set_name , df in data_history.items():    
+        df[f"predicted_proba_{iteration_number}"] = data_with_predictions[set_name]["predicted_proba"]
+        df[f"predicted_label_{iteration_number}"] = data_with_predictions[set_name]["predicted_label"]
+        df[f"sAUD_{iteration_number}"] = ((df["alcohol_use_disorders"] == 0) & (df["predicted_proba"] > best_threshold)).astype(int)
+        data_history[set_name] = df 
+        
 
 def iterative_train_model(model_name, logger):
     
@@ -75,10 +80,17 @@ def iterative_train_model(model_name, logger):
         data_with_predictions, best_threshold = do_one_iteration(logger,model_name,i,XS, YS, data)
         
         # stocker les proba des differents iteration : 
-        storage(logger, data_history,data_with_predictions, i )
+        storage(logger, data_history, data_with_predictions, i )
         
         # just-qu'a la dans data_with_predictions y a les prediction : donc je dois mettre les saud dans les aud pour la prochaine iteration : 
         data = update_with_saud(logger, data_with_predictions, best_threshold )
+        
+    # AHO plots 
+    # plot 1: on plot juste les vrai aud, les saud identifier dans l'iteration courante, et les non-aud de base 
+    
+        
+        
+        
 
         
 if __name__ == "__main__":
