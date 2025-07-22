@@ -15,7 +15,6 @@ def search_threshold(logger,model_name, d):
     distances = []
     logger.info(f"get list of thresholds")
     thresholds  = get_thresholds_from_proba(d["predicted_proba"])
-    print(thresholds)
     # get hcc patients
     df = d[d["age_hepatocellular_carcinoma_dp_dr"].notna()]
 
@@ -56,11 +55,11 @@ def search_threshold(logger,model_name, d):
     
 def search_best_seil(model_name, logger): 
     # load the data : 
-    data_with_predictions = get_data(logger, f'{DATA_PATHS["data_with_predictions"]}/{model_name}') 
+    data_with_predictions = get_data(logger, f'{DATA_PATHS["data_with_predictions"][model_name]}') 
 
     # search threshold      
     best_threshold = search_threshold(logger, model_name,  data_with_predictions["all_data"]) 
-    print(best_threshold)
+    
 
 
 if __name__ == "__main__":

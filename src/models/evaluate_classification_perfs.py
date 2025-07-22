@@ -38,7 +38,7 @@ def evaluate_model(model_name, logger):
     """
 
     # load the data : 
-    data_with_predictions = get_data(logger, f'{DATA_PATHS["data_with_predictions"]}/{model_name}') 
+    data_with_predictions = get_data(logger, f'{DATA_PATHS["data_with_predictions"][model_name]}') 
     
     dataframe_perf = calculate_classif_perfs(data_with_predictions)
     

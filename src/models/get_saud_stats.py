@@ -133,9 +133,7 @@ def get_stats(data_with_predictions, model_name,threshold ):
 
     res = pd.DataFrame(res)
     # saud stats   
-    pth = IDENTIFICATION_SAUD_PATH / model_name 
-    pth.mkdir(parents=True, exist_ok=True)
-    res.to_csv(f"{pth}/saud_stats_{model_name}.csv", index=False)
+    res.to_csv(f"{IDENTIFICATION_SAUD_PATH[model_name]}/saud_stats_{model_name}.csv", index=False)
 
 
 def get_saud_stats(logger, model_name, threshold): 
@@ -155,12 +153,8 @@ def get_saud_stats(logger, model_name, threshold):
         threshold values for SAUD classification.
 
     """
-    
-    #Load the data with the predictions of all the evailable models
-    logger.info(f"Load data With predictions")
-
     # Load model predictions
-    models_data_with_predictions =  load_data(F'{DATA_PATHS["data_with_predictions"]}/{model_name}') 
+    models_data_with_predictions =  get_data(logger, f'{DATA_PATHS["data_with_predictions"][model_name]}') 
     #plot_age_hcc_optimal_plot(data, models_data_with_predictions["xgboost"], models_data_with_predictions["oneClassSVM"], models_data_with_predictions["MLP"], FEATURE_GROUPS["hcc_age_onset"], model_threshold_pairs["xgboost"], model_threshold_pairs["oneClassSVM"], model_threshold_pairs["MLP"])
    
     logger.info(f"get stats on the number of saud / saud with HCC  ")
