@@ -207,7 +207,7 @@ def get_performances(YS, YS_hat, set_name ):
     }
         
     
-def save_classification_performances_csv(perfs, model_name):
+def save_classification_performances_csv(perfs, save_path):
     """
     Save classification performance metrics to a CSV file.
 
@@ -224,9 +224,7 @@ def save_classification_performances_csv(perfs, model_name):
     pathlib.Path
         Path to the saved CSV file.
     """
-    save_path = os.path.join(CLASSIF_PERFS_DIR_PATH[model_name], f"{model_name}_conf_matrice.csv") 
     perfs.to_csv(save_path, index=False)
-    return save_path 
 
 
 def validate_params(model_name, params):

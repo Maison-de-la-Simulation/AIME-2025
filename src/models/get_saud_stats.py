@@ -95,7 +95,7 @@ def plot_age_hcc_optimal_plot(data_dict, data_with_predictions,age_variable, bes
         distance.to_csv(f"{IDENTIFICATION_SAUD_PATH}/dist_wasserteIn_plots.csv", index=False) 
    
    
-def get_stats(data_with_predictions, model_name,threshold ): 
+def get_stats(logger, data_with_predictions,threshold ): 
     """
     Computes statistics on SAUD patients identified by the models, including:
     - number and proportion of SAUDs,
@@ -113,6 +113,7 @@ def get_stats(data_with_predictions, model_name,threshold ):
     -----
     - A CSV file summarizing statistics of SAUD detection. 
     """
+    logger.info(f"get stats on the number of saud / saud with HCC  ")
     res = []
     for set_name, d in data_with_predictions.items():  
         nb_phase = len(d)
@@ -122,18 +123,20 @@ def get_stats(data_with_predictions, model_name,threshold ):
         saud_hcc = saud[saud["age_hepatocellular_carcinoma_dp_dr"].notna()]
         
         res.append({
+            "threshold_best": threshold, 
             "phase": set_name, 
+            "nb_aud": nb_aud, 
+            "nb_non_aud": nb_non_aud,
             "nb_saud": len(saud), 
             "%saud ": round(len(saud)/nb_phase*100,3), 
             "%saud/aud": round(len(saud)/nb_aud*100,3), 
             "%saud/non_aud": round(len(saud)/nb_non_aud*100,3), 
             "prev_hcc": round(len(saud_hcc)/len(saud)*100,3), 
-                
         })
 
     res = pd.DataFrame(res)
-    # saud stats   
-    res.to_csv(f"{IDENTIFICATION_SAUD_PATH[model_name]}/saud_stats_{model_name}.csv", index=False)
+    return res 
+    
 
 
 def get_saud_stats(logger, model_name, threshold): 
@@ -155,11 +158,12 @@ def get_saud_stats(logger, model_name, threshold):
     """
     # Load model predictions
     models_data_with_predictions =  get_data(logger, f'{DATA_PATHS["data_with_predictions"][model_name]}') 
-    #plot_age_hcc_optimal_plot(data, models_data_with_predictions["xgboost"], models_data_with_predictions["oneClassSVM"], models_data_with_predictions["MLP"], FEATURE_GROUPS["hcc_age_onset"], model_threshold_pairs["xgboost"], model_threshold_pairs["oneClassSVM"], model_threshold_pairs["MLP"])
    
-    logger.info(f"get stats on the number of saud / saud with HCC  ")
-    get_stats(models_data_with_predictions, model_name, threshold)
-
+    stats = get_stats(logger, models_data_with_predictions, threshold)
+    
+    # save stats 
+    logger.info(f"Save sAUD stats ")
+    stats.to_csv(f"{IDENTIFICATION_SAUD_PATH[model_name]}/saud_stats_{model_name}.csv", index=False)
 
 
 if __name__ == "__main__":

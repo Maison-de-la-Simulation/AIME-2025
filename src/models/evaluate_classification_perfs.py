@@ -12,7 +12,7 @@ from src.config import(
     DATA_PATHS
 )
 
-def calculate_classif_perfs(data_with_predictions): 
+def calculate_classif_perfs(logger, data_with_predictions): 
     
     logger.info(f"Calculate classification performances")
     perfs = []
@@ -40,10 +40,11 @@ def evaluate_model(model_name, logger):
     # load the data : 
     data_with_predictions = get_data(logger, f'{DATA_PATHS["data_with_predictions"][model_name]}') 
     
-    dataframe_perf = calculate_classif_perfs(data_with_predictions)
+    dataframe_perf = calculate_classif_perfs(logger, data_with_predictions)
     
-    save_p = save_classification_performances_csv(dataframe_perf,model_name)
-    logger.info(f"{model_name} Classification Performances saved at: {save_p}")
+    save_path = os.path.join(CLASSIF_PERFS_DIR_PATH[model_name], f"{model_name}_conf_matrice.csv") 
+    save_classification_performances_csv(dataframe_perf,save_path)
+    logger.info(f"{model_name} Classification Performances saved at: {save_path}")
 
 
 if __name__ == "__main__":

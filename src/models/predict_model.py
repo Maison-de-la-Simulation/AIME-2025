@@ -26,7 +26,7 @@ def load_model(model_name,logger, model_path):
     return traine_model 
 
     
-def calculate_predictions(traine_model, XS, data): 
+def calculate_predictions(logger, traine_model, XS, data): 
      # get proba prediction 
     logger.info(f"Calculate predictions")
 
@@ -55,7 +55,7 @@ def predict_model(model_name,logger, model_path ):
     XS,YS = prepare_training_data(logger,data )
 
     # get the predictions : 
-    data_with_predictions = calculate_predictions(traine_model, XS, data)
+    data_with_predictions = calculate_predictions(logger, traine_model, XS, data)
     
     # Save the model predictions 
     save_data_with_predictions(data_with_predictions, logger, model_name)
