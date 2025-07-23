@@ -17,13 +17,60 @@ from src.config import(
 )
 
 
+def get_union_saud(df, num_iteration ): 
+    # renvoie tout les patient qui ete classifier comme saud au moin une seule fois jusqu'a l'iteration num_iteration 
+    
+    colonnes_cibles = [f"sAUD_{i}" for i in range(num_iteration+1)]
+    masque = df[colonnes_cibles].eq(1).any(axis=1) 
+    return df[masque]
 
-def  plot_2(data_history, model_name): 
-    pass 
 
 def  plot_3(data_history, model_name): 
     pass 
 
+
+def  plot_2(data_history, model_name): 
+    # plot 1: on plot juste les vrai aud, les saud identifier dans l'iteration courante, et les non-aud de base 
+    for set_name, dat in data_history.items(): 
+        data_HCCs = dat[dat["age_hepatocellular_carcinoma_dp_dr"].notna()] 
+        fig, ax = plt.subplots(figsize=(8, 6))  
+        # Tracé de la distribution des AUD
+        sns.kdeplot(
+            data=data_HCCs[data_HCCs["alcohol_use_disorders"] == 1], 
+            x="age_hepatocellular_carcinoma_dp_dr", color="orange", fill=False, 
+            common_norm=False, alpha=0.5, linewidth=2, label=f"AUD"
+        )
+        # Tracé de la distribution des non-AUD
+        sns.kdeplot(
+            data=data_HCCs[data_HCCs["alcohol_use_disorders"] == 0], 
+            x="age_hepatocellular_carcinoma_dp_dr", color="blue", fill=False, 
+            common_norm=False, alpha=0.5, linewidth=2, label=f"AUD"
+        )
+        
+        iterations = NB_iterations_by_model[model_name]
+        palette = sns.color_palette("husl", iterations)
+        
+        for i in range(iterations):
+            saud = get_union_saud(data_HCCs, i)
+            nb_saud = len(saud) 
+            if(nb_saud!=0) :  
+                sns.kdeplot(
+                    data=saud, x="age_hepatocellular_carcinoma_dp_dr", 
+                    color=palette[i], fill=False, common_norm=False, 
+                    alpha=0.5,
+                    linewidth=2, 
+                    label=f"Union_sAUD_jsq{i}"
+                )
+                
+        # Configuration des axes et titre
+        ax.set_title(f"Distribution de age_hepatocellular_carcinoma_dp_dr set={set_name})", fontsize=14, pad=15)
+        ax.grid(visible=True, linestyle="--", alpha=0.5)
+                
+        # Ajouter une légende
+        ax.legend(loc="best", fontsize=10)
+        save_path = f"{IDENTIFICATION_SAUD_PLOTS_PATH[model_name]}/age_distribution_2_{set_name}.png"
+        plt.savefig(save_path, dpi=300, format="png")   
+       
 
 def  plot_1(data_history, model_name): 
     # plot 1: on plot juste les vrai aud, les saud identifier dans l'iteration courante, et les non-aud de base 
@@ -40,7 +87,7 @@ def  plot_1(data_history, model_name):
         sns.kdeplot(
             data=data_HCCs[data_HCCs["alcohol_use_disorders"] == 0], 
             x="age_hepatocellular_carcinoma_dp_dr", color="blue", fill=False, 
-            common_norm=False, alpha=0.5, linewidth=2, label=f"AUD"
+            common_norm=False, alpha=0.5, linewidth=2, label=f"non-AUD"
         )
         
         iterations = NB_iterations_by_model[model_name]
@@ -64,7 +111,7 @@ def  plot_1(data_history, model_name):
                 
         # Ajouter une légende
         ax.legend(loc="best", fontsize=10)
-        save_path = f"{IDENTIFICATION_SAUD_PLOTS_PATH[model_name]}/age_distribution_{set_name}.png"
+        save_path = f"{IDENTIFICATION_SAUD_PLOTS_PATH[model_name]}/age_distribution_1_{set_name}.png"
         plt.savefig(save_path, dpi=300, format="png")   
        
         
@@ -144,9 +191,9 @@ def iterative_train_model(model_name, logger):
     
     # la il faut penser à stocjer data_history comme data_with prediction comme avant 
     # AHO plots 
-    plot_1(data_history["all_data"], model_name) 
-    plot_2(data_history["all_data"], model_name)
-    plot_3(data_history["all_data"], model_name)
+    plot_1(data_history, model_name) 
+    plot_2(data_history, model_name)
+    plot_3(data_history, model_name)
         
         
         
