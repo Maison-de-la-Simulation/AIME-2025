@@ -24,13 +24,74 @@ def get_union_saud(df, num_iteration ):
     masque = df[colonnes_cibles].eq(1).any(axis=1) 
     return df[masque]
 
+def get_non_aud_pure(df, num_iteration): 
+    non_aud = df[df["alcohol_use_disorders"] == 0]
+    colonnes_cibles = [f"sAUD_{i}" for i in range(num_iteration+1)]
+    masque = non_aud[colonnes_cibles].eq(0).all(axis=1) 
+    return non_aud[masque]
+
 
 def  plot_3(data_history, model_name): 
-    pass 
+    # on plot juste les vrai aud, l'union des saud identifier jusqu'à l'iteration courante, et les non-aud moin l'union des saud 
+    for set_name, dat in data_history.items(): 
+        data_HCCs = dat[dat["age_hepatocellular_carcinoma_dp_dr"].notna()] 
+        fig, ax = plt.subplots(figsize=(8, 6))  
+        # Tracé de la distribution des AUD
+        sns.kdeplot(
+            data=data_HCCs[data_HCCs["alcohol_use_disorders"] == 1], 
+            x="age_hepatocellular_carcinoma_dp_dr", color="black", fill=False, 
+            common_norm=False, alpha=0.5, linewidth=2, label=f"AUD"
+        )
+        
+         # Tracé de la distribution des non_AUD
+        sns.kdeplot(
+            data=data_HCCs[data_HCCs["alcohol_use_disorders"] == 0], 
+            x="age_hepatocellular_carcinoma_dp_dr", color="black", fill=False, 
+            linestyle="--", common_norm=False, alpha=0.5, linewidth=2, label=f"non-AUD"
+        )
+    
+        iterations = NB_iterations_by_model[model_name]
+        palette = sns.color_palette("husl", iterations)
+        palette_non_aud = sns.color_palette("flare", iterations)
+
+        for i in range(iterations):
+            saud = get_union_saud(data_HCCs, i)
+            pure_non_aud = get_non_aud_pure(data_HCCs, i)
+            nb_saud = len(saud) 
+            nb_non_aud_pure = len(pure_non_aud)
+            if(nb_saud!=0) :  
+                sns.kdeplot(
+                    data=saud, x="age_hepatocellular_carcinoma_dp_dr", 
+                    color=palette[i], fill=False, common_norm=False, 
+                    alpha=0.5,
+                    linewidth=2, 
+                    label=f"Union_sAUD_jsq{i}"
+                )
+                
+            if(nb_non_aud_pure!=0) :  
+                sns.kdeplot(
+                    data=pure_non_aud, x="age_hepatocellular_carcinoma_dp_dr", 
+                    color=palette_non_aud[i], fill=False, common_norm=False, 
+                    alpha=0.5,
+                    linewidth=2, 
+                    linestyle="--",
+                    label=f"non_AUD_jsq{i}"
+                )
+                
+        # Configuration des axes et titre
+        ax.set_title(f"Distribution de age_hepatocellular_carcinoma_dp_dr set={set_name})", fontsize=14, pad=15)
+        ax.grid(visible=True, linestyle="--", alpha=0.5)
+                
+        # Ajouter une légende
+        ax.legend(loc="best", fontsize=10)
+        save_path = f"{IDENTIFICATION_SAUD_PLOTS_PATH[model_name]}/AHO_pure_nonAUD_{set_name}.png"
+        plt.savefig(save_path, dpi=300, format="png")   
+
+
 
 
 def  plot_2(data_history, model_name): 
-    # plot 1: on plot juste les vrai aud, les saud identifier dans l'iteration courante, et les non-aud de base 
+    # on plot juste les vrai aud, l'union des saud identifier jusqu'à l'iteration courante, et les non-aud de base 
     for set_name, dat in data_history.items(): 
         data_HCCs = dat[dat["age_hepatocellular_carcinoma_dp_dr"].notna()] 
         fig, ax = plt.subplots(figsize=(8, 6))  
@@ -68,7 +129,7 @@ def  plot_2(data_history, model_name):
                 
         # Ajouter une légende
         ax.legend(loc="best", fontsize=10)
-        save_path = f"{IDENTIFICATION_SAUD_PLOTS_PATH[model_name]}/age_distribution_2_{set_name}.png"
+        save_path = f"{IDENTIFICATION_SAUD_PLOTS_PATH[model_name]}/AHO_union_{set_name}.png"
         plt.savefig(save_path, dpi=300, format="png")   
        
 
@@ -111,19 +172,20 @@ def  plot_1(data_history, model_name):
                 
         # Ajouter une légende
         ax.legend(loc="best", fontsize=10)
-        save_path = f"{IDENTIFICATION_SAUD_PLOTS_PATH[model_name]}/age_distribution_1_{set_name}.png"
+        save_path = f"{IDENTIFICATION_SAUD_PLOTS_PATH[model_name]}/AHO_disjoint_{set_name}.png"
         plt.savefig(save_path, dpi=300, format="png")   
        
         
-        
-
-
+    
 
 def do_one_iteration(logger,model_name,iteration_number,XS, YS, data): 
 
     # get the best trained model : 
-    best_model = train(logger, model_name, XS, YS )
-        
+    idx_best_model, best_hyperparam, best_model, trained_models, rapport_df = train(logger, model_name, XS, YS )
+    print(best_hyperparam)
+    print(idx_best_model)
+    print(rapport_df)
+    
     # save the model : 
     path_to_save = os.path.join(MODELS_PATHS[model_name], f"best_{model_name}_iteration_{iteration_number}.pkl") 
     save_best_trained_model(logger,best_model,path_to_save)
@@ -150,7 +212,6 @@ def do_one_iteration(logger,model_name,iteration_number,XS, YS, data):
     
     return data_with_predictions , best_threshold 
     
-
 
 def update_with_saud(logger, data_with_predictions,best_threshold): 
     

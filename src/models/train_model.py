@@ -67,10 +67,12 @@ def search_best_model(XS, YS, model_name, logger):
         trained_models.append(model)
         
     # get the best model based in a metric: here we use the auc criterio 
-    rapport_df  = pd.DataFrame.from_dict(report)  
+    rapport_df  = pd.DataFrame.from_dict(report) 
     idx_best_model = rapport_df[model_hyperparam_selection_criterion].idxmax() 
-    
-    return trained_models[idx_best_model] 
+    best_hyperparam = paramset[idx_best_model]
+    best_model = trained_models[idx_best_model] 
+        
+    return idx_best_model, best_hyperparam, best_model, trained_models, rapport_df
 
 
     
@@ -83,7 +85,7 @@ def save_best_trained_model(logger, best_model,model_path):
 def train(logger, model_name, XS, YS ): 
     
     logger.info(f"Training {model_name} model with hyperparameter search ! ")
-    best_model = search_best_model(XS, YS, model_name, logger)
+    idx_best_model, best_hyperparam, best_model, trained_models, rapport_df = search_best_model(XS, YS, model_name, logger)
     return best_model 
     
     

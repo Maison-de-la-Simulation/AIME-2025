@@ -53,9 +53,17 @@ def save_distances(logger, model_name, distances_df, path_to_save):
     
     
 def get_best_threshold(distances_df): 
-    # get the optimal threshold : 
-    best_threshold = distances_df.loc[distances_df["dist"].idxmin(), "seil"]   
-    return best_threshold 
+    # get the optimal threshold : au lieu de faire ca je le saisie moi en se basant sur les resulat des distance wwassertein 
+    #best_threshold = distances_df.loc[distances_df["dist"].idxmin(), "seil"]   
+    while True:
+        try:
+            saisie = input("Veuillez entrer la valeur du threshold optimal ")
+            best_threshold = float(saisie)
+            break
+        except ValueError:
+            print("Entrée invalide. Veuillez entrer un nombre valide.")
+    
+    return best_threshold
     
     
     
