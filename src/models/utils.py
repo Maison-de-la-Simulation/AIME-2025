@@ -124,9 +124,6 @@ def select_features(data_dict):
     return filtered_data
 
 
-
-
-
 def split_features_target(data): 
     XS = {}
     YS = {}
@@ -165,7 +162,7 @@ def load_data_for_uncertainty_estimation(path):
     return XS, YS 
     
     
-def get_performances(YS, YS_hat, set_name ): 
+def get_performances(YS, YS_hat, Y_hat_prob, set_name ): 
     """
     Compute classification performance metrics for a model.
     Parameters
@@ -186,7 +183,7 @@ def get_performances(YS, YS_hat, set_name ):
     accuracy = accuracy_score(YS,YS_hat)
     conf_matrix = confusion_matrix(YS,YS_hat)
     tn, fp, fn, tp = conf_matrix.ravel()
-    auc = roc_auc_score(YS,YS_hat)
+    auc = roc_auc_score(YS,Y_hat_prob)
         
     tpr = tp / (tp + fn)
     tnr = tn / (tn + fp)

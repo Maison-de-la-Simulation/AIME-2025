@@ -15,6 +15,7 @@ def search_threshold(logger,model_name, d):
     distances = []
     logger.info(f"get list of thresholds")
     thresholds  = get_thresholds_from_proba(d["predicted_proba"])
+    print(thresholds)
     # get hcc patients
     df = d[d["age_hepatocellular_carcinoma_dp_dr"].notna()]
 
@@ -39,6 +40,8 @@ def search_threshold(logger,model_name, d):
                     "nb_saud_hcc" : nb_saud_hcc, 
                     "saud_hcc/saud" : round(nb_saud_hcc/nb_all_sauds *100, 2)
                 })  
+        else: 
+            print(f" saud = 0 pour s={threshold}")
                 
     logger.info(f"plot AHO by threshold")
     plot_age_hcc(d, THRESHOLD_SEARCH_PATH[model_name], thresholds)

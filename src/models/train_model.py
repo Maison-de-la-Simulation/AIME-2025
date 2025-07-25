@@ -58,36 +58,40 @@ def search_best_model(XS, YS, model_name, logger):
         model.train(XS, YS) 
         
         # predict the outputs of the trained model using the validation data 
-        y_hat =  model.predict(XS["validation"])
+        y_hat_label =  model.predict(XS["validation"])
+        y_hat_proba =  model.predict_classification_proba(XS["validation"])
     
         # get the classification performances on the validation data 
-        perfs = get_performances(YS["validation"], y_hat , "validation")
+        perfs = get_performances(YS["validation"], y_hat_label , y_hat_proba, "validation")
     
         report.append(perfs)
         trained_models.append(model)
         
     # get the best model based in a metric: here we use the auc criterio 
     rapport_df  = pd.DataFrame.from_dict(report) 
-    idx_best_model = rapport_df[model_hyperparam_selection_criterion].idxmax() 
+    # sauvegarder le rapport_df: 
+    rapport_df.to_csv(f"{TRAIN_LOG_DIR_PATH}/rapport_perfs_auc_all_models.csv", index=False)
+    
+    # get the best model: 
+    max_crit_val = rapport_df[model_hyperparam_selection_criterion].max()
+    candidats = rapport_df[rapport_df[model_hyperparam_selection_criterion] == max_crit_val]
+    idx_best_model = candidats["tpr"].idxmax()
+    
+    #idx_best_model = rapport_df[model_hyperparam_selection_criterion].idxmax()
     best_hyperparam = paramset[idx_best_model]
     best_model = trained_models[idx_best_model] 
-        
+    
     return idx_best_model, best_hyperparam, best_model, trained_models, rapport_df
 
-
-    
 def save_best_trained_model(logger, best_model,model_path): 
-   
     best_model.save(model_path) 
     logger.info(f"Model training completed. Best Model saved at {model_path}") 
 
 
 def train(logger, model_name, XS, YS ): 
-    
     logger.info(f"Training {model_name} model with hyperparameter search ! ")
     idx_best_model, best_hyperparam, best_model, trained_models, rapport_df = search_best_model(XS, YS, model_name, logger)
-    return best_model 
-    
+    return idx_best_model, best_hyperparam, best_model, trained_models, rapport_df 
     
 
 def train_model(model_name, logger, path_to_save):
@@ -108,7 +112,7 @@ def train_model(model_name, logger, path_to_save):
     data = get_data(logger, DATA_PATHS["processed"])
     data = select_features(data)
     XS,YS = prepare_training_data(logger, data)
-    best_model = train(logger, model_name, XS, YS )
+    idx_best_model, best_hyperparam, best_model, trained_models, rapport_df  = train(logger, model_name, XS, YS )
     save_best_trained_model(logger, best_model, path_to_save)
     
     

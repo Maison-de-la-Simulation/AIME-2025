@@ -39,6 +39,7 @@ class XGBoostModel(BaseModel):
         return pd.DataFrame(self.model.predict(X), columns=['predicted_label']) 
     
     
+    
     def predict_classification_proba(self, X):
         """
         Make Probabilitie predictions with the trained XGBoost model.

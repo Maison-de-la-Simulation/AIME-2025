@@ -176,12 +176,10 @@ def  plot_1(data_history, model_name):
         plt.savefig(save_path, dpi=300, format="png")   
        
         
-    
-
 def do_one_iteration(logger,model_name,iteration_number,XS, YS, data): 
 
     # get the best trained model : 
-    idx_best_model, best_hyperparam, best_model, trained_models, rapport_df = train(logger, model_name, XS, YS )
+    idx_best_model, best_hyperparam, best_model, trained_models, rapport_df  = train(logger, model_name, XS, YS)
     print(best_hyperparam)
     print(idx_best_model)
     print(rapport_df)
@@ -213,7 +211,7 @@ def do_one_iteration(logger,model_name,iteration_number,XS, YS, data):
     return data_with_predictions , best_threshold 
     
 
-def update_with_saud(logger, data_with_predictions,best_threshold): 
+def update_with_saud(logger, data_with_predictions, best_threshold): 
     
     logger.info(f"Update AUD with identified sAUD")
     for set_name , df in data_with_predictions.items(): 
@@ -248,7 +246,7 @@ def iterative_train_model(model_name, logger):
         storage(logger, data_history, data_with_predictions, i,best_threshold)
         
         # just-qu'a la dans data_with_predictions y a les prediction : donc je dois mettre les saud dans les aud pour la prochaine iteration : 
-        data = update_with_saud(logger, data_with_predictions, best_threshold )
+        data = update_with_saud(logger, data_with_predictions, best_threshold)
     
     # la il faut penser à stocjer data_history comme data_with prediction comme avant 
     # AHO plots 
@@ -257,8 +255,6 @@ def iterative_train_model(model_name, logger):
     plot_3(data_history, model_name)
         
         
-        
-
         
 if __name__ == "__main__":
     

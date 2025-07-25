@@ -17,7 +17,7 @@ def calculate_classif_perfs(logger, data_with_predictions):
     logger.info(f"Calculate classification performances")
     perfs = []
     for set_name, d in data_with_predictions.items():
-        perfs.append(get_performances(d[FEATURE_GROUPS["target_variable"]], d["predicted_label"], set_name))
+        perfs.append(get_performances(d[FEATURE_GROUPS["target_variable"]], d["predicted_label"], d["predicted_proba"], set_name))
         
     dataframe_perf = pd.DataFrame(perfs)
     return dataframe_perf
