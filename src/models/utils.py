@@ -418,8 +418,42 @@ def get_stat_saud(d, threshold):
                 }
     return distance
 
+def get_union_saud(df, num_iteration ): 
+    # renvoie tout les patient qui ete classifier comme saud au moin une seule fois jusqu'a l'iteration num_iteration 
+    
+    colonnes_cibles = [f"sAUD_{i}" for i in range(num_iteration+1)]
+    masque = df[colonnes_cibles].eq(1).any(axis=1) 
+    return df[masque]
+
+def get_non_aud_pure(df, num_iteration): 
+    non_aud = df[df["alcohol_use_disorders"] == 0]
+    colonnes_cibles = [f"sAUD_{i}" for i in range(num_iteration+1)]
+    masque = non_aud[colonnes_cibles].eq(0).all(axis=1) 
+    return non_aud[masque]
+
+def get_intersection_saud(df, num_iteration): 
+    colonnes_cibles = [f"sAUD_{i}" for i in range(num_iteration+1)]
+    masque = df[colonnes_cibles].eq(1).all(axis=1) 
+    return df[masque]
     
     
+def get_non_aud_pure_intersection(df, num_iteration): 
+    colonnes_cibles = [f"sAUD_{i}" for i in range(num_iteration + 1)]
+    masque_saud_intersection = df[colonnes_cibles].eq(1).all(axis=1)
+    masque_non_aud = df["alcohol_use_disorders"] == 0
+    final_mask = masque_non_aud & ~masque_saud_intersection
+    return df[final_mask]
+
+
+    
+def storage(logger, data_history, data_with_predictions, iteration_number,best_threshold): 
+    logger.info(f"Storage iteration {iteration_number} results")
+    for set_name , df in data_history.items():    
+        df[f"predicted_proba_{iteration_number}"] = data_with_predictions[set_name]["predicted_proba"]
+        df[f"predicted_label_{iteration_number}"] = data_with_predictions[set_name]["predicted_label"]
+        df[f"sAUD_{iteration_number}"] = ((data_with_predictions[set_name]["alcohol_use_disorders"] == 0) & (data_with_predictions[set_name]["predicted_proba"] > best_threshold)).astype(int)
+        data_history[set_name] = df 
+        
     
     
     
