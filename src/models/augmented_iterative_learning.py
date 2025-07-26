@@ -196,7 +196,7 @@ def do_one_iteration(logger,model_name,iteration_number,XS, YS, data):
     save_classification_performances_csv(dataframe_perf,os.path.join(CLASSIF_PERFS_DIR_PATH[model_name], f"{model_name}_iteration_{iteration_number}.csv"))
     
     # get the AHO distances by threshold 
-    distances_df = search_threshold(logger,model_name, data_with_predictions["all_data"])
+    distances_df = search_threshold_iterative_learning(logger,model_name, data_with_predictions["all_data"])
     save_distances(logger, model_name, distances_df, f"{THRESHOLD_SEARCH_PATH[model_name]}/wass_dist_by_threshold_iteration_{iteration_number}.csv")
         
     # get the best threshol 
@@ -234,6 +234,12 @@ def iterative_train_model(model_name, logger):
    
     data = get_data(logger, DATA_PATHS["processed"])
     data_history = get_data(logger, DATA_PATHS["processed"]) 
+    #create the initial_aud feature : 
+    for set_name, df in data.items():
+        df['initial_aud'] = df['alcohol_use_disorders'].copy()
+        data[set_name]=df
+        
+    print(data["train"].head)
     
     for i in range(NB_iterations_by_model[model_name]): 
         logger.info(f"******** Iterative number {i} *********")

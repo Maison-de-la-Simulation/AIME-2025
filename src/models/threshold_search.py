@@ -9,7 +9,46 @@ from src.config import(
     
 )
 
+def search_threshold_iterative_learning(logger,model_name, d): 
+    distances = []
+    logger.info(f"get list of thresholds")
+    thresholds  = get_thresholds_from_proba(d["predicted_proba"])
+    print(thresholds)
+    # get hcc patients
+    df = d[d["age_hepatocellular_carcinoma_dp_dr"].notna()]
 
+    logger.info(f"Get distances by threshold")
+    for i, threshold in enumerate(thresholds):
+        all_sauds = d[(d['alcohol_use_disorders'] == 0) & (d['predicted_proba'] >= threshold)]
+        nb_all_sauds = len(all_sauds)
+        if(nb_all_sauds!=0): 
+            
+            #hcc_sauds = df[(df['alcohol_use_disorders'] == 0) & (df['predicted_proba'] >= threshold)]
+            hcc_sauds = all_sauds[all_sauds['age_hepatocellular_carcinoma_dp_dr'].notna()]
+            nb_saud_hcc =  len(hcc_sauds) 
+            
+            # calculer la distance des deux distribution: 
+            distance = kde_wasserstein_distance(df[df["initial_aud"] == 1]["age_hepatocellular_carcinoma_dp_dr"],hcc_sauds["age_hepatocellular_carcinoma_dp_dr"])
+            if(distance):
+                distances.append({
+                    "seil": threshold,
+                    "dist": round(distance, 2),
+                    "nb_saud" : nb_all_sauds, 
+                    "%saud_/total" : round(nb_all_sauds/len(d) *100,2),
+                    "nb_saud_hcc" : nb_saud_hcc, 
+                    "saud_hcc/saud" : round(nb_saud_hcc/nb_all_sauds *100, 2)
+                })  
+        else: 
+            print(f" saud = 0 pour s={threshold}")
+                
+    logger.info(f"plot AHO by threshold")
+    plot_age_hcc(d, THRESHOLD_SEARCH_PATH[model_name], thresholds)
+
+    distances_df = pd.DataFrame(distances)
+    return distances_df 
+
+    
+    
 def search_threshold(logger,model_name, d):
     
     distances = []
