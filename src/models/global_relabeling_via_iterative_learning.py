@@ -69,8 +69,11 @@ def stats_final_saud(data_with_predictions,model_name, logger):
         model_name_i = f"best_{model_name}_iteration_{i}"
         logger.info(f"******** Get final sAUD stats with the {model_name_i} *********")
         nb_phase = len(d)
+        aud = d[d["alcohol_use_disorders"]==1]
+        aud_hcc = aud[aud["age_hepatocellular_carcinoma_dp_dr"].notna()] 
+        nb_aud = len(aud)
+        
         nb_non_aud = len(d[d["alcohol_use_disorders"]==0])
-        nb_aud =     len(d[d["alcohol_use_disorders"]==1])
         
         saud_i  = d[d[f"sAUD_{i}"]== 1]        
         union_saud = get_union_saud(d, i )
@@ -78,8 +81,10 @@ def stats_final_saud(data_with_predictions,model_name, logger):
         
         for name, grp in zip(['saud_disjoint', 'saud_union', 'saud_intersection'], [saud_i, union_saud, intersection_saud]):            
             saud_hcc =  grp[grp["age_hepatocellular_carcinoma_dp_dr"].notna()]
+            distance = kde_wasserstein_distance(aud_hcc["age_hepatocellular_carcinoma_dp_dr"], saud_hcc["age_hepatocellular_carcinoma_dp_dr"])
             res[name].append({
                 "model": i, 
+                "best_seil":best_threshold_par_iteration[model_name][i], 
                 "nb_aud": nb_aud, 
                 "nb_non_aud": nb_non_aud,
                 "nb_saud": len(grp), 
@@ -88,6 +93,7 @@ def stats_final_saud(data_with_predictions,model_name, logger):
                 "%saud/non_aud": round(len(grp)/nb_non_aud*100,3), 
                 "nb_saud_hcc" : len(saud_hcc),
                 "prev_hcc": round(len(saud_hcc)/len(grp)*100,3), 
+                "dist" : round(distance, 2)
             })
         
     for name, df in res.items(): 
