@@ -9,7 +9,8 @@ from src.models.get_saud_stats import *
 from src.models.utils import * 
 from src.models.plot_functions import *
 from src.models.available_models import models
-
+from collections import defaultdict
+ 
 from src.config import(
     GLOBAL_LABELING_LOG_PATH, 
     NB_iterations_by_model, 
@@ -21,7 +22,8 @@ from src.config import(
     IDENTIFICATION_FINAL_SAUD_STATS_PATH
 )
 
-
+    
+    
 def predict_final_saud(model_name, logger, best_thresholds): 
     data = get_data(logger, DATA_PATHS["processed"])  
     data_history = get_data(logger, DATA_PATHS["processed"]) 
@@ -56,19 +58,52 @@ def predict_final_saud(model_name, logger, best_thresholds):
     return data_history 
 
     
-
+    
+def stats_final_saud(data_with_predictions,model_name, logger): 
+    logger.info(f"********  golobal sAUD stats through global labeling with the iterative models  ********")
+    res = defaultdict(list)
+    
+    d = data_with_predictions["all_data"]
+    
+    for i in range(NB_iterations_by_model[model_name]): 
+        model_name_i = f"best_{model_name}_iteration_{i}"
+        logger.info(f"******** Get final sAUD stats with the {model_name_i} *********")
+        nb_phase = len(d)
+        nb_non_aud = len(d[d["alcohol_use_disorders"]==0])
+        nb_aud =     len(d[d["alcohol_use_disorders"]==1])
+        
+        saud_i  = d[d[f"sAUD_{i}"]== 1]        
+        union_saud = get_union_saud(d, i )
+        intersection_saud =  get_intersection_saud(d, i)
+        
+        for name, grp in zip(['saud_disjoint', 'saud_union', 'saud_intersection'], [saud_i, union_saud, intersection_saud]):            
+            saud_hcc =  grp[grp["age_hepatocellular_carcinoma_dp_dr"].notna()]
+            res[name].append({
+                "model": i, 
+                "nb_aud": nb_aud, 
+                "nb_non_aud": nb_non_aud,
+                "nb_saud": len(grp), 
+                "%saud ": round(len(grp)/nb_phase*100,3), 
+                "%saud/aud": round(len(grp)/nb_aud*100,3), 
+                "%saud/non_aud": round(len(grp)/nb_non_aud*100,3), 
+                "nb_saud_hcc" : len(saud_hcc),
+                "prev_hcc": round(len(saud_hcc)/len(grp)*100,3), 
+            })
+        
+    for name, df in res.items(): 
+        res_df = pd.DataFrame(df)
+        res_df.to_csv(f"{IDENTIFICATION_FINAL_SAUD_STATS_PATH[model_name]}/{name}_stats.csv", index=False) 
 
 def global_labeling(model_name, logger): 
     logger.info(f"********  get final sAUDs through global labeling with the iterative models  ********")
     data__with_predictions = predict_final_saud(model_name, logger, best_threshold_par_iteration[model_name])
     logger.info(f"********  Plot the golobal sAUDs through global labeling with the iterative models  ********")
-    
-    # AHO plots 
     plot_1(data__with_predictions, model_name, IDENTIFICATION_FINAL_SAUD_PLOTS_PATH[model_name]) 
     plot_2(data__with_predictions, model_name, IDENTIFICATION_FINAL_SAUD_PLOTS_PATH[model_name])
     plot_3(data__with_predictions, model_name, IDENTIFICATION_FINAL_SAUD_PLOTS_PATH[model_name])
     plot_intersection_saud(data__with_predictions, model_name, IDENTIFICATION_FINAL_SAUD_PLOTS_PATH[model_name])    
     plot_saud_intersection_nAUD_pure(data__with_predictions, model_name, IDENTIFICATION_FINAL_SAUD_PLOTS_PATH[model_name])
+    stats_final_saud(data__with_predictions,model_name, logger) 
 
 if __name__ == "__main__":
     
