@@ -129,7 +129,9 @@ def split_features_target(data):
     YS = {}
     
     for set_name, data_phase in data.items():  
-        XS[set_name]  = data_phase.drop(columns=[FEATURE_GROUPS["target_variable"], "initial_aud" ]) 
+        #XS[set_name]  = data_phase.drop(columns=[FEATURE_GROUPS["target_variable"], "initial_aud" ]) # pour augented iterative learning 
+        XS[set_name]  = data_phase.drop(columns=[FEATURE_GROUPS["target_variable"]]) 
+
         YS[set_name]  = data_phase[FEATURE_GROUPS["target_variable"]]
 
     return  XS ,YS 
@@ -371,7 +373,7 @@ def plot_age_hcc(d, path_to_save, thresholds):
                 )
                 # Tracé de la distribution des AUD
                 sns.kdeplot(
-                        data=df[df["initial_aud"] == 1], 
+                        data=df[df["alcohol_use_disorders"] == 1], 
                         x="age_hepatocellular_carcinoma_dp_dr", color="orange", fill=False, 
                         common_norm=False, alpha=0.5, linewidth=2, label=f"AUD"
                 )
@@ -383,7 +385,7 @@ def plot_age_hcc(d, path_to_save, thresholds):
                         linewidth=2, 
                         label=f"sAUD (Seuil={threshold:.2f})"
                 )
-                
+        
                 # Configuration des axes et titre
                 ax.set_title(f"Distribution de age_hepatocellular_carcinoma_dp_dr (Seuil={threshold:.2f})", fontsize=14, pad=15)
                 ax.grid(visible=True, linestyle="--", alpha=0.5)

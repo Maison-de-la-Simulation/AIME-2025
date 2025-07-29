@@ -7,7 +7,7 @@ from src.models.threshold_search import *
 from src.models.get_saud_stats import *
 
 from src.models.utils import * 
-from plot_functions import *
+from src.models.plot_functions import *
 from src.models.available_models import models
 
 from src.config import(
@@ -52,13 +52,16 @@ def do_one_iteration(logger,model_name,iteration_number,XS, YS, data):
     
     return data_with_predictions , best_threshold 
     
+    
+    
 def update_with_saud(logger, data_with_predictions, best_threshold): 
     logger.info(f"Update AUD with identified sAUD")
     for set_name , df in data_with_predictions.items(): 
         df["alcohol_use_disorders"] = ((df["alcohol_use_disorders"] == 1) | (df["predicted_proba"] > best_threshold)).astype(int)
         data_with_predictions[set_name] = df 
-        
     return data_with_predictions 
+
+
     
 def storage(logger, data_history, data_with_predictions, iteration_number, best_threshold): 
     logger.info(f"Storage iteration {iteration_number} results")
@@ -84,15 +87,16 @@ def iterative_train_model(model_name, logger):
         data_with_predictions, best_threshold = do_one_iteration(logger,model_name,i,XS, YS, data)
         # stocker les proba des differents iteration : 
         storage(logger, data_history, data_with_predictions, i,best_threshold)
-        save_data_with_predictions(data_history, logger, model_name )
+        save_data_with_predictions(data_history, logger, model_name)
         
         # just-qu'a la dans data_with_predictions y a les prediction : donc je dois mettre les saud dans les aud pour la prochaine iteration : 
         data = update_with_saud(logger, data_with_predictions, best_threshold)
     
     # AHO plots 
-    plot_1(data_history, model_name) 
-    plot_2(data_history, model_name)
-    plot_3(data_history, model_name)
+    plot_1(data_history, model_name, IDENTIFICATION_SAUD_PLOTS_PATH[model_name]) 
+    plot_2(data_history, model_name, IDENTIFICATION_SAUD_PLOTS_PATH[model_name])
+    plot_3(data_history, model_name, IDENTIFICATION_SAUD_PLOTS_PATH[model_name])
+    
         
         
         

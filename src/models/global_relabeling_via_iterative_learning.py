@@ -22,8 +22,7 @@ from src.config import(
     IDENTIFICATION_FINAL_SAUD_STATS_PATH
 )
 
-    
-    
+
 def predict_final_saud(model_name, logger, best_thresholds): 
     data = get_data(logger, DATA_PATHS["processed"])  
     data_history = get_data(logger, DATA_PATHS["processed"]) 
