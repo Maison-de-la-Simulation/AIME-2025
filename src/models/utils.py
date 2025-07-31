@@ -80,7 +80,7 @@ def load_data(path):
     return data 
 
 
-def get_data(logger, data_path ): 
+def get_data(logger, data_path): 
     
     # load the training data 
     logger.info(f"Load data")

@@ -34,7 +34,7 @@ def calculate_predictions(logger, traine_model, XS, data):
         preds_proba = traine_model.predict_classification_proba(d)
         preds_label = traine_model.predict(d)
         data[set_name] = pd.concat([data[set_name].reset_index(drop=True), preds_proba.reset_index(drop=True), preds_label.reset_index(drop=True)], axis=1) 
-        
+
     return data 
 
 def save_data_with_predictions(data, logger,model_name ): 
