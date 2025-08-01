@@ -1,4 +1,3 @@
-
 import pandas as pd 
 import numpy as np  
 import sys 
@@ -29,14 +28,14 @@ def evaluate_model(model_name, logger):
     computing classification performances, and saving the results.
 
     Parameters
-    ----------
+    ----------  
     model_name : str
         The name of the model to evaluate. It must correspond to a key in the `models` dictionary.
     
     logger : logging.Logger
         Logger instance used to log messages during the evaluation process.
     """
-
+    
     # load the data : 
     data_with_predictions = get_data(logger, f'{DATA_PATHS["data_with_predictions"][model_name]}') 
     
@@ -48,7 +47,7 @@ def evaluate_model(model_name, logger):
 
 
 if __name__ == "__main__":
-    #parse the model arguments
+    #parse the model arguments  
     args = parse_model_args()
      # setup logger 
     logger = setup_logger(EVAL_LOG_DIR_PATH, args.model)  
